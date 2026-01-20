@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juris AI | Product & Engineering Report</title>
+    <title>Juris AI | Relatório Técnico</title>
     <style>
         :root {
             --bg-color: #050910;
@@ -13,6 +13,7 @@
             --accent: #3b82f6;
             --security: #10b981;
             --warning: #f59e0b;
+            --danger: #ef4444;
             --border: #1e293b;
         }
 
@@ -42,7 +43,7 @@
             background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        /* --- KPIS & FEATURE GRID --- */
+        /* --- STATS & FEATURE GRID --- */
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 60px; }
         .stat-card { background: var(--card-bg); padding: 20px; border: 1px solid var(--border); border-radius: 6px; }
         .stat-card strong { display: block; font-size: 1.5rem; color: white; }
@@ -56,6 +57,23 @@
             border-radius: 6px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem;
         }
         .f-icon { color: var(--security); font-weight: bold; }
+
+        /* --- TERMINAL (O BLOCO QUE VOLTOU) --- */
+        .terminal-window {
+            background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); font-family: 'Consolas', monospace; overflow: hidden; margin-bottom: 80px;
+        }
+        .terminal-header { background: #161b22; padding: 10px 15px; border-bottom: 1px solid #30363d; display: flex; gap: 8px; align-items: center; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; } .yellow { background: #ffbd2e; } .green { background: #27c93f; }
+        .terminal-body { padding: 20px; font-size: 0.9rem; color: #d1d5db; }
+        .cmd { color: var(--security); margin-bottom: 10px; display: block; }
+        .output-line { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .method { color: var(--accent); font-weight: bold; width: 60px; }
+        .endpoint { color: #a5b4fc; flex: 1; }
+        .status { color: var(--security); text-align: right; min-width: 100px; }
+        .status.err { color: var(--danger); }
+        .status.wait { color: var(--warning); }
 
         /* --- DB DIAGRAM --- */
         .db-diagram-wrap {
@@ -72,7 +90,7 @@
             display:inline-flex; align-items:center; gap: 8px; padding: 5px 12px; border-radius: 20px;
             border: 1px solid var(--border); background: rgba(15, 23, 42, 0.8); font-size: 0.75rem; color: var(--text-secondary);
         }
-        .dot { width: 8px; height:8px; border-radius:50%; }
+        .dot-leg { width: 8px; height:8px; border-radius:50%; }
         .d-core { background: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
         .d-gov { background: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.5); }
         .d-int { background: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,0.5); }
@@ -98,12 +116,11 @@
         .db-attrs { font-family: 'Consolas', monospace; font-size: 0.8rem; color: #cbd5e1; line-height: 1.5; }
         .db-attrs span { color: #64748b; }
 
-        /* SVG */
         .db-svg { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
         .db-svg path { fill: none; stroke: #3b82f6; stroke-width: 2; opacity: 0.4; }
         .db-svg path.gov { stroke: #10b981; } .db-svg path.int { stroke: #f59e0b; }
 
-        /* --- TOUR STYLE --- */
+        /* --- TOUR --- */
         .section-header { margin: 80px 0 40px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         .section-header h2 { font-size: 2rem; color: white; }
         
@@ -119,7 +136,6 @@
         
         .tour-info { flex: 1; }
         .tour-info h3 { font-size: 1.6rem; color: white; margin-bottom: 20px; }
-        
         .tour-bullets { list-style: none; }
         .tour-bullets li { margin-bottom: 15px; color: var(--text-secondary); display: flex; gap: 12px; font-size: 0.95rem; }
         .tour-bullets li::before { content: "▹"; color: var(--accent); font-weight: bold; }
@@ -132,10 +148,10 @@
 
         @media print {
             body { background: white; color: black; }
-            .stat-card, .f-item, .db-diagram-wrap, .db-card, .db-group, .tour-img { border: 1px solid #ccc; background: white; color: black; box-shadow: none; }
+            .stat-card, .f-item, .db-diagram-wrap, .db-card, .db-group, .tour-img, .terminal-window { border: 1px solid #ccc; background: white; color: black; box-shadow: none; }
             .section-header h2, .hero h1, .tour-info h3, .db-head h3, .db-group-title, .db-name { color: black; }
-            header, .btn-print, .db-svg { display: none; }
-            .tour-bullets strong, .pill, .badge { color: black; border-color: #ccc; }
+            header, .btn-print, .db-svg, .terminal-header { display: none; }
+            .tour-bullets strong, .pill, .badge, .cmd, .method, .endpoint, .status { color: black; border-color: #ccc; }
         }
     </style>
 </head>
@@ -145,7 +161,7 @@
         <div class="container header-content">
             <div class="brand">JURIS <span>AI</span></div>
             <div style="font-size: 0.8rem; color: var(--text-secondary); border: 1px solid var(--border); padding: 5px 12px; border-radius: 20px;">
-                CONFIDENTIAL REPORT v1.0
+                Desenvolvido por <strong>Alberto</strong> | Janeiro 2026
             </div>
         </div>
     </header>
@@ -188,15 +204,15 @@
                         <p>Modelo preparado para multi-tenant (isolamento por <code>office_id</code>) e integridade referencial estrita.</p>
                     </div>
                     <div class="db-legend">
-                        <div class="pill"><span class="dot d-core"></span><b>CORE</b> Jurídico</div>
-                        <div class="pill"><span class="dot d-int"></span><b>INTEGRAÇÃO</b></div>
-                        <div class="pill"><span class="dot d-gov"></span><b>GOVERNANÇA</b></div>
+                        <div class="pill"><span class="dot-leg d-core"></span><b>CORE</b> Jurídico</div>
+                        <div class="pill"><span class="dot-leg d-int"></span><b>INTEGRAÇÃO</b></div>
+                        <div class="pill"><span class="dot-leg d-gov"></span><b>GOVERNANÇA</b></div>
                     </div>
                 </div>
 
                 <div class="db-grid">
                     <div class="db-group">
-                        <div class="db-group-title"><span class="dot d-core"></span> CORE</div>
+                        <div class="db-group-title"><span class="dot-leg d-core"></span> CORE</div>
                         <div class="db-card" id="db-offices">
                             <div class="db-header"><div class="db-name">offices</div><div class="badges"><span class="badge b-pk">PK id</span></div></div>
                             <div class="db-attrs">name <span>(Tenant Raiz)</span></div>
@@ -211,27 +227,27 @@
                         </div>
                         <div class="db-card" id="db-deadlines">
                             <div class="db-header"><div class="db-name">deadlines</div><div class="badges"><span class="badge b-fk">FK process_id</span></div></div>
-                            <div class="db-attrs">due_date, is_critical, responsible, completed, completed_at</div>
+                            <div class="db-attrs">due_date, is_critical, responsible, completed</div>
                         </div>
                     </div>
 
                     <div class="db-group">
-                        <div class="db-group-title"><span class="dot d-int"></span> INTEGRAÇÕES</div>
+                        <div class="db-group-title"><span class="dot-leg d-int"></span> INTEGRAÇÕES</div>
                         <div class="db-card" id="db-users">
                             <div class="db-header"><div class="db-name">users</div><div class="badges"><span class="badge b-fk">FK office_id</span></div></div>
-                            <div class="db-attrs">email, password, is_owner</div>
+                            <div class="db-attrs">email, password_hash, is_owner, role</div>
                         </div>
                         <div class="db-card" id="db-tokens">
                             <div class="db-header"><div class="db-name">google_tokens</div><div class="badges"><span class="badge b-fk">FK office_id</span></div></div>
-                            <div class="db-attrs">access_token, refresh_token, scope, expires_at</div>
+                            <div class="db-attrs">access_token, refresh_token, scope, expiry</div>
                         </div>
                     </div>
 
                     <div class="db-group">
-                        <div class="db-group-title"><span class="dot d-gov"></span> GOVERNANÇA</div>
+                        <div class="db-group-title"><span class="dot-leg d-gov"></span> GOVERNANÇA</div>
                         <div class="db-card" id="db-blocks">
                             <div class="db-header"><div class="db-name">user_blocks</div><div class="badges"><span class="badge b-fk">FK user_id</span></div></div>
-                            <div class="db-attrs">reason, blocked_by_system, blocked_at, resolved_at</div>
+                            <div class="db-attrs">reason, blocked_by_system, blocked_at</div>
                         </div>
                         <div class="db-card" id="db-overrides">
                             <div class="db-header"><div class="db-name">office_overrides</div><div class="badges"><span class="badge b-fk">FK office_id</span></div></div>
@@ -242,7 +258,30 @@
             </div>
         </div>
 
-        <div class="section-header animate-in"><h2>👁️ Tour de Funcionalidades & Segurança</h2></div>
+        <div class="section-header animate-in"><h2>💻 Backend & API Logs</h2></div>
+
+        <div class="terminal-window animate-in">
+            <div class="terminal-header">
+                <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                <span style="font-size: 0.8rem; color: #8b949e; margin-left: 10px;">root@juris-ai:~/backend-service</span>
+            </div>
+            <div class="terminal-body">
+                <span class="cmd">> uvicorn main:app --workers 4 --host 0.0.0.0</span>
+                <br>
+                <div style="color: #64748b; margin-bottom: 10px;">INFO: Server started. Environment: PRODUCTION</div>
+                
+                <div class="output-line"><span class="method">POST</span> <span class="endpoint">/api/v1/auth/google/callback</span> <span class="status">200 OK</span></div>
+                <div class="output-line"><span class="method">GET</span> <span class="endpoint">/api/v1/governance/status?office_id=14</span> <span class="status err">403 LOCKED</span></div>
+                <div class="output-line"><span class="method">POST</span> <span class="endpoint">/api/v1/governance/override</span> <span class="status">201 CREATED</span></div>
+                <div class="output-line"><span class="method">GET</span> <span class="endpoint">/api/v1/deadlines?filter=critical</span> <span class="status">200 OK</span></div>
+                <div class="output-line"><span class="method">POST</span> <span class="endpoint">/api/v1/integrations/calendar/sync</span> <span class="status wait">202 ACCEPTED</span></div>
+                <div class="output-line"><span class="method">GET</span> <span class="endpoint">/api/v1/drive/files/list</span> <span class="status">200 OK</span></div>
+                <br>
+                <span class="cmd">> _</span>
+            </div>
+        </div>
+
+        <div class="section-header animate-in"><h2>👁️ Tour de Funcionalidades</h2></div>
 
         <div class="tour-row animate-in">
             <div class="tour-info">
@@ -258,11 +297,11 @@
 
         <div class="tour-row animate-in">
             <div class="tour-info">
-                <h3>2. OAuth Google (Consentimento Real)</h3>
+                <h3>2. OAuth Google (Consentimento)</h3>
                 <ul class="tour-bullets">
                     <li><strong>Interface:</strong> Fluxo de autorização nativo do Google.</li>
-                    <li><strong>Backend:</strong> OAuth 2.0 com persistência de credenciais (Tokens) por escritório.</li>
-                    <li><strong>Valor:</strong> Integração Workspace legítima + base para Calendar/Drive sem fricção.</li>
+                    <li><strong>Backend:</strong> OAuth 2.0 com persistência de tokens.</li>
+                    <li><strong>Valor:</strong> Integração Workspace legítima, sem gambiarra.</li>
                 </ul>
             </div>
             <div class="tour-img"><img src="login_google.png" alt="Fluxo OAuth Google"></div>
@@ -273,7 +312,7 @@
                 <h3 style="color: #ef4444;">3. Governança: "Kill Switch"</h3>
                 <ul class="tour-bullets">
                     <li><strong>Interface:</strong> Bloqueio total da tela em caso de inadimplência.</li>
-                    <li><strong>Backend:</strong> O bloqueio é estrutural (Middleware). A API rejeita conexões.</li>
+                    <li><strong>Backend:</strong> O bloqueio é estrutural (Middleware). A API rejeita conexões (403).</li>
                     <li><strong>Valor:</strong> Proteção total do ativo SaaS e garantia de conformidade.</li>
                 </ul>
             </div>
@@ -282,10 +321,10 @@
 
         <div class="tour-row animate-in">
             <div class="tour-info">
-                <h3 style="color: var(--warning);">4. Evidência do Override (Expiração)</h3>
+                <h3 style="color: var(--warning);">4. Evidência do Override</h3>
                 <ul class="tour-bullets">
-                    <li><strong>Interface:</strong> Confirmação do desbloqueio e exibição do horário de expiração.</li>
-                    <li><strong>Backend:</strong> Override com <code>expires_at</code>; ao expirar, volta a bloquear automaticamente.</li>
+                    <li><strong>Interface:</strong> Confirmação do desbloqueio com timestamp de expiração.</li>
+                    <li><strong>Backend:</strong> Override com <code>expires_at</code>; ao expirar, volta a bloquear.</li>
                     <li><strong>Valor:</strong> Flexibilidade controlada: libera quando precisa, sem abrir brecha.</li>
                 </ul>
             </div>
@@ -332,7 +371,7 @@
             <div class="tour-info">
                 <h3>8. Drive (Conexão e Validação)</h3>
                 <ul class="tour-bullets">
-                    <li><strong>Interface:</strong> Conectar Drive e obter status imediato (conectado/busca).</li>
+                    <li><strong>Interface:</strong> Conectar Drive e obter status imediato.</li>
                     <li><strong>Backend:</strong> Drive API v3 + validação de acesso.</li>
                     <li><strong>Valor:</strong> Base para gestão documental e futura IA (RAG).</li>
                 </ul>
@@ -408,6 +447,7 @@
 
         let t = null;
         function scheduleDraw() { if(t) cancelAnimationFrame(t); t = requestAnimationFrame(draw); }
+        
         window.addEventListener("resize", scheduleDraw);
         window.addEventListener("scroll", scheduleDraw);
         scheduleDraw();
