@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juris AI | Relatório Técnico</title>
+    <title>Juris AI | Relatório de Engenharia</title>
     <style>
         :root {
             --bg-color: #050910;
@@ -13,7 +13,8 @@
             --accent: #3b82f6;
             --security: #10b981;
             --warning: #f59e0b;
-            --danger: #ef4444;
+            --purple: #8b5cf6;
+            --locked: #334155;
             --border: #1e293b;
         }
 
@@ -58,7 +59,7 @@
         }
         .f-icon { color: var(--security); font-weight: bold; }
 
-        /* --- TERMINAL (O BLOCO QUE VOLTOU) --- */
+        /* --- TERMINAL --- */
         .terminal-window {
             background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5); font-family: 'Consolas', monospace; overflow: hidden; margin-bottom: 80px;
@@ -84,7 +85,6 @@
         .db-head { position: relative; z-index: 3; display:flex; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
         .db-head h3 { font-size: 1.35rem; color: white; margin-bottom: 5px; }
         .db-head p { color: var(--text-secondary); max-width: 800px; font-size: 0.95rem; }
-        
         .db-legend { display:flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
         .pill { 
             display:inline-flex; align-items:center; gap: 8px; padding: 5px 12px; border-radius: 20px;
@@ -94,11 +94,9 @@
         .d-core { background: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
         .d-gov { background: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.5); }
         .d-int { background: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,0.5); }
-
         .db-grid { position: relative; z-index: 3; display:grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 20px; }
         .db-group { border: 1px solid var(--border); border-radius: 12px; background: rgba(11, 15, 25, 0.5); padding: 15px; }
         .db-group-title { display:flex; align-items:center; gap: 10px; color: white; font-weight: 700; margin-bottom: 15px; font-size: 0.9rem; }
-        
         .db-card {
             background: rgba(21, 27, 43, 0.7); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px;
             transition: transform 0.2s;
@@ -115,7 +113,6 @@
         .b-fk { border-color: #64748b; }
         .db-attrs { font-family: 'Consolas', monospace; font-size: 0.8rem; color: #cbd5e1; line-height: 1.5; }
         .db-attrs span { color: #64748b; }
-
         .db-svg { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
         .db-svg path { fill: none; stroke: #3b82f6; stroke-width: 2; opacity: 0.4; }
         .db-svg path.gov { stroke: #10b981; } .db-svg path.int { stroke: #f59e0b; }
@@ -123,23 +120,65 @@
         /* --- TOUR --- */
         .section-header { margin: 80px 0 40px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         .section-header h2 { font-size: 2rem; color: white; }
-        
         .tour-row { display: flex; align-items: center; gap: 50px; margin-bottom: 100px; }
         .tour-row:nth-child(even) { flex-direction: row-reverse; }
-        
         .tour-img { 
             flex: 1.4; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; 
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;
         }
         .tour-img img { width: 100%; display: block; transition: transform 0.3s; }
         .tour-img:hover img { transform: scale(1.02); }
-        
         .tour-info { flex: 1; }
         .tour-info h3 { font-size: 1.6rem; color: white; margin-bottom: 20px; }
         .tour-bullets { list-style: none; }
         .tour-bullets li { margin-bottom: 15px; color: var(--text-secondary); display: flex; gap: 12px; font-size: 0.95rem; }
         .tour-bullets li::before { content: "▹"; color: var(--accent); font-weight: bold; }
         .tour-bullets strong { color: #e2e8f0; }
+
+        /* --- TECH TREE (GAMIFIED ROADMAP) --- */
+        .roadmap-container { position: relative; padding-left: 30px; margin-bottom: 80px; }
+        .roadmap-line {
+            position: absolute; left: 14px; top: 10px; bottom: 10px; width: 2px;
+            background: linear-gradient(to bottom, var(--security) 30%, var(--warning) 60%, var(--locked) 100%); z-index: 0;
+        }
+        .quest-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+            padding: 25px; margin-bottom: 30px; position: relative; z-index: 1;
+            transition: transform 0.2s;
+        }
+        .quest-card:hover { transform: translateX(5px); }
+        
+        .quest-status {
+            position: absolute; top: 20px; right: 20px; font-size: 0.75rem; font-weight: 800;
+            padding: 4px 10px; border-radius: 4px; letter-spacing: 1px;
+        }
+        .status-done { background: rgba(16, 185, 129, 0.15); color: var(--security); border: 1px solid var(--security); }
+        .status-progress { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+        .status-locked { background: rgba(51, 65, 85, 0.5); color: #94a3b8; border: 1px solid #475569; }
+
+        .quest-dot {
+            position: absolute; left: -36px; top: 30px; width: 14px; height: 14px; border-radius: 50%;
+            border: 2px solid var(--bg-color); z-index: 2;
+        }
+        .dot-done { background: var(--security); box-shadow: 0 0 10px var(--security); }
+        .dot-progress { background: var(--warning); box-shadow: 0 0 10px var(--warning); }
+        .dot-locked { background: var(--locked); }
+
+        .quest-title { font-size: 1.2rem; color: white; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .quest-desc { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 15px; }
+        
+        /* ROLES / SKILLS PILLS */
+        .roles-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .role-pill {
+            font-size: 0.75rem; color: white; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .role-pill i { color: var(--accent); }
+
+        .xp-container { background: #1e293b; height: 10px; border-radius: 5px; width: 100%; margin-top: 30px; overflow: hidden; }
+        .xp-fill { background: linear-gradient(90deg, var(--security), var(--accent)); height: 100%; width: 100%; } /* 100% Phase 1 */
+        .xp-text { font-size: 0.8rem; color: var(--security); margin-top: 8px; text-align: right; font-weight: 700; letter-spacing: 1px; }
 
         @media (max-width: 900px) {
             .grid-4, .db-grid, .tour-row, .tour-row:nth-child(even) { grid-template-columns: 1fr; flex-direction: column; }
@@ -148,10 +187,10 @@
 
         @media print {
             body { background: white; color: black; }
-            .stat-card, .f-item, .db-diagram-wrap, .db-card, .db-group, .tour-img, .terminal-window { border: 1px solid #ccc; background: white; color: black; box-shadow: none; }
-            .section-header h2, .hero h1, .tour-info h3, .db-head h3, .db-group-title, .db-name { color: black; }
+            .stat-card, .f-item, .db-diagram-wrap, .db-card, .db-group, .tour-img, .terminal-window, .quest-card { border: 1px solid #ccc; background: white; color: black; box-shadow: none; }
+            .section-header h2, .hero h1, .tour-info h3, .db-head h3, .db-group-title, .db-name, .quest-title { color: black; }
             header, .btn-print, .db-svg, .terminal-header { display: none; }
-            .tour-bullets strong, .pill, .badge, .cmd, .method, .endpoint, .status { color: black; border-color: #ccc; }
+            .tour-bullets strong, .pill, .badge, .cmd, .method, .endpoint, .status, .quest-status, .role-pill { color: black; border-color: #ccc; }
         }
     </style>
 </head>
@@ -161,7 +200,7 @@
         <div class="container header-content">
             <div class="brand">JURIS <span>AI</span></div>
             <div style="font-size: 0.8rem; color: var(--text-secondary); border: 1px solid var(--border); padding: 5px 12px; border-radius: 20px;">
-                Desenvolvido por <strong>Alberto</strong> | Janeiro 2026
+                CONFIDENTIAL REPORT v1.0
             </div>
         </div>
     </header>
@@ -379,6 +418,59 @@
             <div class="tour-img"><img src="drive.png" alt="Drive Integration"></div>
         </div>
 
+        <div class="section-header animate-in"><h2>🚀 Tech Tree & Evolução</h2></div>
+
+        <div class="roadmap-container animate-in">
+            <div class="roadmap-line"></div>
+            
+            <div class="quest-card">
+                <div class="quest-dot dot-done"></div>
+                <div class="quest-status status-done">FASE 1: CONCLUÍDA</div>
+                <div class="quest-title">
+                    <span>🏆 Foundation MVP (Core)</span>
+                </div>
+                <div class="quest-desc">
+                    Engenharia completa do núcleo: Sistema de Identidade, Governança SaaS, Banco Relacional e Integrações Google.
+                </div>
+                
+                <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:5px; font-weight:700;">COMPETÊNCIAS APLICADAS (Squad-in-a-Box):</div>
+                <div class="roles-grid">
+                    <div class="role-pill"><i>🏛️</i> System Architect</div>
+                    <div class="role-pill"><i>🔒</i> Security Engineer</div>
+                    <div class="role-pill"><i>💾</i> Database Admin</div>
+                    <div class="role-pill"><i>💻</i> Fullstack Dev</div>
+                    <div class="role-pill"><i>☁️</i> Cloud Ops</div>
+                </div>
+            </div>
+
+            <div class="quest-card">
+                <div class="quest-dot dot-progress"></div>
+                <div class="quest-status status-progress">LOADING...</div>
+                <div class="quest-title">
+                    <span>⚙️ Cloud Hardening & Scale</span>
+                </div>
+                <div class="quest-desc">
+                    Migração do banco de dados para PostgreSQL (Produção), Deploy em Azure App Service e implementação de HTTPS/SSL.
+                </div>
+            </div>
+
+            <div class="quest-card">
+                <div class="quest-dot dot-locked"></div>
+                <div class="quest-status status-locked">LOCKED</div>
+                <div class="quest-title">
+                    <span>🔮 Juris Intelligence (RAG)</span>
+                </div>
+                <div class="quest-desc">
+                    Módulo de Inteligência Artificial para leitura contextual de PDFs e contratos (Retrieval-Augmented Generation).
+                </div>
+            </div>
+
+            <div class="xp-container">
+                <div class="xp-fill"></div>
+            </div>
+            <div class="xp-text">PHASE 1 (CORE) COMPLETE: 100%</div>
+        </div>
+
         <div style="text-align: center; margin-top: 60px;">
             <button onclick="window.print()" style="background: var(--text-primary); color: var(--bg-color); border: none; padding: 16px 45px; border-radius: 6px; font-weight: 700; cursor: pointer;">
                 🖨️ Imprimir Relatório Executivo
@@ -447,7 +539,6 @@
 
         let t = null;
         function scheduleDraw() { if(t) cancelAnimationFrame(t); t = requestAnimationFrame(draw); }
-        
         window.addEventListener("resize", scheduleDraw);
         window.addEventListener("scroll", scheduleDraw);
         scheduleDraw();
